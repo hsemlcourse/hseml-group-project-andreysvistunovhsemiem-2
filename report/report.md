@@ -1,7 +1,8 @@
 # Отчёт по проекту — CP1 + CP2 + CP3
 
 **Студент:** Свистунов Андрей
-**Группа:** —
+
+**Группа:** БИВ238
 
 ---
 
@@ -243,7 +244,7 @@ docker compose up api ui
 ![Streamlit result](images/streamlit_result.png)
 *Рис. 3. Результат скоринга: вероятность 22.1% при пороге 0.17 → «Риск дефолта».*
 
-**Видео работы:** ссылка будет добавлена в `report/demo_video.md` после записи.
+**Видео работы:** <https://drive.google.com/file/d/17Ra6JsXQG85OFkZmnchbx5iqyGUItnqu/view?usp=sharing>
 
 **Тесты деплоя.** `tests/test_api.py` через `fastapi.testclient.TestClient`: `/health`, валидация
 входа (422 на отрицательный AGE), сравнение скоров «низкий vs высокий риск», батч-эндпоинт.
