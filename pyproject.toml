@@ -40,6 +40,10 @@ select = ["E", "F", "W", "I"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test.py", "test_*.py", "*_test.py"]
+markers = [
+    "unit: маленькие изолированные тесты на функции/классы",
+    "integration: тесты, поднимающие пайплайн целиком",
+]
 
 [tool.setuptools.packages.find]
 where = ["."]
