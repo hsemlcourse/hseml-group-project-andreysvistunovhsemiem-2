@@ -20,6 +20,10 @@ dependencies = [
     "ipykernel>=6.0",
     "xgboost>=2.0",
     "lightgbm>=4.0",
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.27",
+    "streamlit>=1.32",
+    "httpx>=0.26",
 ]
 
 [dependency-groups]

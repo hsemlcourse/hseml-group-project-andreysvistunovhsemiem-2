@@ -61,6 +61,8 @@ models/*.pt
 models/*.pth
 models/*.onnx
 !models/.gitkeep
+!models/final_model.joblib
+!models/threshold.json
 
 # =============================================================================
 # Reports — figures are regenerated, but keep CSV
@@ -103,3 +105,4 @@ ehthumbs.db
 htmlcov/
 
 REQUIREMENTS.md
+report/report.html
