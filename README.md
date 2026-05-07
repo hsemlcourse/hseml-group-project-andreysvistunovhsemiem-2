@@ -53,10 +53,17 @@
 │   ├── threshold.py            # Подбор порога + калибровка
 │   ├── dim_reduction.py        # PCA-эксперимент
 │   ├── interpret.py            # Feature / permutation importance
-│   └── metrics.py              # Обёртка метрик
+│   ├── metrics.py              # Обёртка метрик
+│   ├── finalize.py             # Финальная модель: tuned + isotonic calibration
+│   ├── serve.py                # Scorer + Pydantic ClientPayload
+│   ├── api.py                  # FastAPI: /health, /predict, /predict_batch
+│   └── ui.py                   # Streamlit-форма скоринга
+├── scripts
+│   └── build_report_pdf.sh     # md → html → pdf через pandoc + Chrome
 ├── tests
 │   ├── test.py                 # Тесты CP1 (анти-leakage, FE, smoke run)
-│   └── test_cp2.py             # Тесты CP2 (cv, threshold, pca, importances)
+│   ├── test_cp2.py             # Тесты CP2 (cv, threshold, pca, importances)
+│   └── test_api.py             # Тесты CP3 (FastAPI TestClient)
 ├── Dockerfile                  # python:3.11-slim + uv (frozen lock)
 ├── docker-compose.yml          # сервисы train / tune / test
 ├── pyproject.toml              # uv + ruff + pytest (markers)
@@ -135,10 +142,35 @@ docker compose run --rm test      # pytest
 
 Финальный отчёт: [`report/report.md`](report/report.md).
 
+## CP3 — деплой
+
+После того как `models/final_model.joblib` и `models/threshold.json` лежат на месте
+(они идут в репозитории; пересобрать можно через `uv run python -m src.tuning && uv run python -m src.finalize`):
+
+```bash
+# FastAPI с авто-сваггером на /docs (порт 8000)
+uv run uvicorn src.api:app --host 0.0.0.0 --port 8000
+
+# Streamlit-форма (порт 8501)
+uv run streamlit run src/ui.py
+
+# Через docker compose: api + ui (ui ждёт healthcheck api)
+docker compose up api ui
+# или с пересборкой: docker compose up --build api ui
+```
+
+Эндпоинты: `GET /health`, `POST /predict`, `POST /predict_batch`. Тесты — `tests/test_api.py`.
+
+Сборка PDF-версии отчёта (требует pandoc и Chrome/Chromium):
+
+```bash
+./scripts/build_report_pdf.sh   # пишет report/report.pdf
+```
+
 ## Чекпоинты
 
-- `cp1` — ветка с CP1 (baseline + 5 моделей, отчёт §1–5).
-- `cp2` — текущая ветка (CV, тюнинг, PCA, калибровка, порог, интерпретируемость, Docker).
-- `cp3` — будет ветка с деплоем (FastAPI).
+- `cp1` — baseline + 5 моделей, отчёт §1–5.
+- `cp2` — CV, тюнинг, PCA, калибровка, порог, интерпретируемость, Docker.
+- `cp3` — текущая ветка: FastAPI + Streamlit + финальный артефакт + PDF-отчёт.
 
 Полное описание требований к каждому чекпоинту — [`REQUIREMENTS.md`](REQUIREMENTS.md).
