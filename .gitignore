@@ -101,3 +101,5 @@ ehthumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+
+REQUIREMENTS.md
