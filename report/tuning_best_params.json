@@ -1,0 +1,29 @@
+{
+  "logreg_fe": {
+    "clf__C": 0.05
+  },
+  "random_forest": {
+    "clf__n_estimators": 500,
+    "clf__min_samples_leaf": 10,
+    "clf__max_features": "sqrt",
+    "clf__max_depth": 10
+  },
+  "xgboost": {
+    "clf__subsample": 0.85,
+    "clf__reg_lambda": 5.0,
+    "clf__n_estimators": 300,
+    "clf__min_child_weight": 5,
+    "clf__max_depth": 3,
+    "clf__learning_rate": 0.05,
+    "clf__colsample_bytree": 0.7
+  },
+  "lightgbm": {
+    "clf__subsample": 0.85,
+    "clf__reg_lambda": 0.5,
+    "clf__num_leaves": 127,
+    "clf__n_estimators": 500,
+    "clf__max_depth": 6,
+    "clf__learning_rate": 0.02,
+    "clf__colsample_bytree": 0.7
+  }
+}

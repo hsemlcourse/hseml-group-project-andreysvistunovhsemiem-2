@@ -1,0 +1,86 @@
+{
+  "threshold_cost": {
+    "threshold": 0.39078477025032043,
+    "precision": 0.36671469740634005,
+    "recall": 0.7677224736048266,
+    "f1": 0.49634324719648953,
+    "cost": 3298.0
+  },
+  "threshold_f1": {
+    "threshold": 0.5599999999999999,
+    "precision": 0.49808673469387754,
+    "recall": 0.5889894419306184,
+    "f1": 0.539737387698687
+  },
+  "calibration": {
+    "method": "isotonic",
+    "brier_before": 0.1806931048631668,
+    "brier_after": 0.1348076274682944,
+    "roc_auc_before": 0.7796693416533595,
+    "roc_auc_after": 0.7805075978735843
+  },
+  "pca": [
+    {
+      "n_components": 10,
+      "explained_variance": 0.7589562718375896,
+      "roc_auc": 0.7484145444039065
+    },
+    {
+      "n_components": 20,
+      "explained_variance": 0.9064411902531809,
+      "roc_auc": 0.75658671439435
+    },
+    {
+      "n_components": 30,
+      "explained_variance": 0.9652080344284959,
+      "roc_auc": 0.7613539886129659
+    },
+    {
+      "n_components": 27,
+      "explained_variance": 0.9537647098725821,
+      "roc_auc": 0.7588658017639982
+    }
+  ],
+  "tree_top10_features": [
+    {
+      "feature": "cat__PAY_2_2",
+      "importance": 0.23337876796722412
+    },
+    {
+      "feature": "num__MAX_DELAY",
+      "importance": 0.18345656991004944
+    },
+    {
+      "feature": "num__NUM_DELAYS",
+      "importance": 0.12133584171533585
+    },
+    {
+      "feature": "num__SUM_DELAY",
+      "importance": 0.0732816830277443
+    },
+    {
+      "feature": "cat__PAY_1_2",
+      "importance": 0.04730318486690521
+    },
+    {
+      "feature": "cat__PAY_1_0",
+      "importance": 0.02707924135029316
+    },
+    {
+      "feature": "num__MEAN_BILL",
+      "importance": 0.020012496039271355
+    },
+    {
+      "feature": "num__MEAN_PAY_AMT",
+      "importance": 0.012000215239822865
+    },
+    {
+      "feature": "num__UTIL_2",
+      "importance": 0.010719380341470242
+    },
+    {
+      "feature": "num__LIMIT_BAL",
+      "importance": 0.00960627943277359
+    }
+  ]
+}

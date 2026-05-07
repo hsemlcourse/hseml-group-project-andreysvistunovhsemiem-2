@@ -11,9 +11,11 @@
 1. [Описание задачи](#описание-задачи)
 2. [Структура репозитория](#структура-репозитория)
 3. [Запуск](#запуск)
-4. [Данные](#данные)
-5. [Результаты](#результаты)
-6. [Отчёт](#отчёт)
+4. [Docker](#docker)
+5. [Данные](#данные)
+6. [Результаты](#результаты)
+7. [Отчёт](#отчёт)
+8. [Чекпоинты](#чекпоинты)
 
 ## Описание задачи
 
@@ -29,25 +31,37 @@
 ├── data
 │   ├── processed               # Очищенные и обработанные данные
 │   └── raw                     # Исходные файлы (не коммитится)
-├── models                      # Сохранённые модели
+├── models                      # Сохранённые модели (baseline + tuned_*)
 ├── notebooks
 │   ├── 01_eda.ipynb            # EDA
-│   ├── 02_baseline.ipynb       # Baseline-модель (LogReg без FE)
-│   └── 03_experiments.ipynb    # Сравнение 5 моделей + ансамблей
+│   ├── 02_baseline.ipynb       # Baseline (LogReg без FE)
+│   ├── 03_experiments.ipynb    # Сравнение 5 моделей + ансамблей (CP1)
+│   └── 04_tuning.ipynb         # CV / тюнинг / PCA / калибровка / интерпретируемость (CP2)
 ├── presentation
 ├── report
 │   ├── images
+│   ├── tuning_results.csv      # таблица CP2 (CV-AUC + test-метрики)
+│   ├── tuning_best_params.json # лучшие гиперпараметры
 │   └── report.md
 ├── src
 │   ├── config.py               # Pydantic-settings (.env)
-│   ├── data.py                 # Загрузка датасета с Kaggle
-│   ├── preprocessing.py        # Очистка + feature engineering + ColumnTransformer
-│   ├── metrics.py              # Обёртка метрик
-│   └── modeling.py             # Baseline-пайплайн
+│   ├── data.py                 # Загрузка с Kaggle (kagglehub)
+│   ├── preprocessing.py        # clean + feature_engineering + ColumnTransformer
+│   ├── modeling.py             # Baseline + 5 моделей на едином сплите
+│   ├── cv.py                   # StratifiedKFold-обёртка
+│   ├── tuning.py               # RandomizedSearchCV для 4 кандидатов
+│   ├── threshold.py            # Подбор порога + калибровка
+│   ├── dim_reduction.py        # PCA-эксперимент
+│   ├── interpret.py            # Feature / permutation importance
+│   └── metrics.py              # Обёртка метрик
 ├── tests
-│   └── test.py
-├── pyproject.toml              # uv + ruff + pytest
+│   ├── test.py                 # Тесты CP1 (анти-leakage, FE, smoke run)
+│   └── test_cp2.py             # Тесты CP2 (cv, threshold, pca, importances)
+├── Dockerfile                  # python:3.11-slim + uv (frozen lock)
+├── docker-compose.yml          # сервисы train / tune / test
+├── pyproject.toml              # uv + ruff + pytest (markers)
 ├── uv.lock
+├── REQUIREMENTS.md             # Зеркало требований курса
 ├── .env.example
 └── README.md
 ```
@@ -67,18 +81,31 @@ cp .env.example .env
 # 3. Скачать датасет в data/raw/UCI_Credit_Card.csv
 uv run python -m src.data
 
-# 4. Запустить тесты и линтер
-uv run ruff check src/
+# 4. Линтер + тесты
+uv run ruff check src/ tests/
 uv run pytest -q
 
-# 5. Обучить baseline + прогнать все эксперименты (LogReg/KNN/RF/XGBoost/LightGBM),
-#    сохраняет models/*.joblib и печатает сводную таблицу метрик.
+# 5. Baseline + сравнение 5 моделей (CP1)
 uv run python -m src.modeling
 
-# 6. Запустить ноутбуки
+# 6. Гиперпараметрический поиск + сохранение лучших пайплайнов (CP2)
+uv run python -m src.tuning
+
+# 7. Ноутбуки
 uv run jupyter lab
-#   или неинтерактивно:
+#  или неинтерактивно:
 uv run jupyter nbconvert --to notebook --execute --inplace notebooks/*.ipynb
+```
+
+## Docker
+
+Воспроизводимая сборка через uv + lock-файл. Артефакты (data/, models/, report/) монтируются с хоста.
+
+```bash
+docker compose build
+docker compose run --rm train     # обучение CP1
+docker compose run --rm tune      # тюнинг CP2
+docker compose run --rm test      # pytest
 ```
 
 ## Данные
@@ -88,7 +115,7 @@ uv run jupyter nbconvert --to notebook --execute --inplace notebooks/*.ipynb
 
 ## Результаты
 
-Оценка на стратифицированном test (20%, seed=42):
+### CP1: дефолтные модели (test, seed=42)
 
 | Модель              | ROC-AUC | PR-AUC | F1    | Recall | Accuracy |
 |---------------------|---------|--------|-------|--------|----------|
@@ -100,8 +127,18 @@ uv run jupyter nbconvert --to notebook --execute --inplace notebooks/*.ipynb
 | LogReg + FE         | 0.768   | 0.537  | 0.520 | 0.601  | 0.754    |
 | **XGBoost (400)**   | **0.774** | **0.551** | 0.468 | 0.363 | 0.818 |
 
-XGBoost лидирует по ROC-AUC. В CP2 — тюнинг гиперпараметров, подбор порога под recall, PCA, калибровка.
+### CP2: результаты тюнинга
+
+Таблица обновляется при запуске `uv run python -m src.tuning` и сохраняется в `report/tuning_results.csv`. Подробности и интерпретация — в [`report/report.md`](report/report.md).
 
 ## Отчёт
 
 Финальный отчёт: [`report/report.md`](report/report.md).
+
+## Чекпоинты
+
+- `cp1` — ветка с CP1 (baseline + 5 моделей, отчёт §1–5).
+- `cp2` — текущая ветка (CV, тюнинг, PCA, калибровка, порог, интерпретируемость, Docker).
+- `cp3` — будет ветка с деплоем (FastAPI).
+
+Полное описание требований к каждому чекпоинту — [`REQUIREMENTS.md`](REQUIREMENTS.md).
