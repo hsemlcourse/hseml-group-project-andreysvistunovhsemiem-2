@@ -1,0 +1,34 @@
+# docker-compose.yml — две задачи: обучение baseline+experiments и тюнинг.
+# Данные/модели монтируются из хоста, чтобы артефакты не пропали с контейнером.
+services:
+  train:
+    build: .
+    image: credit-default:latest
+    container_name: credit-default-train
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./report:/app/report
+    command: ["python", "-m", "src.modeling"]
+
+  tune:
+    build: .
+    image: credit-default:latest
+    container_name: credit-default-tune
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./report:/app/report
+    command: ["python", "-m", "src.tuning"]
+
+  test:
+    build: .
+    image: credit-default:latest
+    container_name: credit-default-test
+    volumes:
+      - ./data:/app/data
+    command: ["python", "-m", "pytest", "-q"]
